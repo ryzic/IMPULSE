@@ -116,7 +116,7 @@ int pulsegen_release(struct inode *inode, struct file *filp)
 }
 
 /**
- * Asserts a 10 usec pulse at the fractional second time
+ * Asserts a 500 usec pulse at the fractional second time
  * requested by timeout on the gpio given by gpio_out.
  */
 void generate_pulse(int timeout, int *gpio_out)
