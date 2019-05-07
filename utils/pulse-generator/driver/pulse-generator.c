@@ -2,7 +2,7 @@
  * pulse-generator.c
  *
  * Created on: Apr 9, 2016
- * Copyright (C) 2016  Raymond S. Connell
+ * Copyright (C) 2016  
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,15 +56,12 @@ module_param(major, int, 0);						/* but can be specified at load time */
 static int gpio_num1 = 0;
 module_param(gpio_num1, int, 0);						/* Specify gpio 1 at load time */
 
-//static int gpio_num2 = 0;
-//module_param(gpio_num2, int, 0);						/* Specify gpio 2 at load time */
 
-MODULE_AUTHOR ("Raymond Connell");
+MODULE_AUTHOR ("");
 MODULE_LICENSE("Dual BSD/GPL");
-MODULE_VERSION("0.1.0");
+MODULE_VERSION("0.1.1");
 
 int gpio_out1 = 0;
-//int gpio_out2 = 0;
 
 int pulseTime[2];
 
@@ -173,7 +170,7 @@ void generate_pulse(int timeout, int *gpio_out)
 }
 
 /**
- * Asserts up to two 10 usec pulses at the fractional second
+ * Asserts up to two 500 usec pulses at the fractional second
  * times requested by buf as a pair of integers. The count
  * value must be 2 * sizeof(int).
  */
@@ -195,10 +192,7 @@ ssize_t pulsegen_i_write (struct file *filp, const char __user *buf, size_t coun
 	if (timeData[0] == 0){
 		generate_pulse(timeData[1], &gpio_out1);
 	}
-	/*else{
-		generate_pulse(timeData[1], &gpio_out2);
-	}*/
-
+	
 	return 0;
 }
 
@@ -242,10 +236,6 @@ void pulsegen_cleanup(void)
 
 	gpio_free(gpio_num1);
 
-	/*if (gpio_num2 > 0){
-		gpio_free(gpio_num2);
-	}*/
-
 	printk(KERN_INFO "pulse-generator: removed\n");
 }
 
@@ -269,15 +259,7 @@ int pulsegen_init(void)
 	}
 	gpio_out1 = gpio_num1;
 
-	/*if (gpio_num2 > 0){
-		if (configureWriteOn(gpio_num2) == -1){
-			printk(KERN_INFO "pulse-generator: failed installation\n");
-			pulsegen_cleanup();
-			return -1;
-		}
-		gpio_out2 = gpio_num2;
-	}*/
-
+	
 	printk(KERN_INFO "pulse-generator: installed\n");
 
 	pulseTime[0] = 0;
