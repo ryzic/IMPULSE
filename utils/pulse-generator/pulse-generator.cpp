@@ -2,7 +2,7 @@
  * pulse-generator.cpp
  *
  * Created on: Apr 9, 2016
- * Copyright (C) 2016  Raymond S. Connell
+ * Copyright (C) 2016  
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@
 #define GPIO_A 0
 //#define O_RDWR 02
 //#define GPIO_B 1
-#define WRITE_DELAY 2			// Estimated delay between write request and
+#define WRITE_DELAY 2						// Estimated delay between write request and
 								// assertion of output pin for Raspberry Pi 3.
 #define JITTER_DISTRIB_LEN 61
 #define SETTLE_TIME 10
@@ -49,9 +49,6 @@ const char *version = "pulse-generator v1.0.1";
 
 const char *p1_distrib_file = "/var/local/pulse1-distrib-forming";
 const char *last_p1_distrib_file = "/var/local/pulse1-distrib";
-
-//const char *p2_distrib_file = "/var/local/pulse2-distrib-forming";
-//const char *last_p2_distrib_file = "/var/local/pulse2-distrib";
 
 int sysCommand(const char *cmd){
 	int rv = system(cmd);
@@ -74,9 +71,7 @@ struct pulseGeneratorGlobalVars {
 	int p1Distrib[JITTER_DISTRIB_LEN];
 	int lastP1Fileno;
 
-	//int p2Count;
-	//int p2Distrib[JITTER_DISTRIB_LEN];
-	//int lastP2Fileno;
+	
 } g;
 
 /**
@@ -180,20 +175,6 @@ void writeP1JitterDistribFile(void){
 }
 
 /**
- * Writes a distribution to disk approximately once a minute
- * containing 60 additional jitter samples recorded at the
- * occurrance of pulse2. The distribution is rolled over to
- * a new file every 24 hours.
- */
-/*void writeP2JitterDistribFile(void){
-	if (g.p2Count % SECS_PER_MINUTE == 0){
-		int scaleZero = JITTER_DISTRIB_LEN / 6;
-		writeDistribution(g.p2Distrib, JITTER_DISTRIB_LEN, scaleZero, g.p2Count,
-				&g.lastP2Fileno, p2_distrib_file, last_p2_distrib_file);
-	}
-}*/
-
-/**
  * Constructs a distribution of relative pulse time
  * relative to pulseVal that can be saved to disk
  * for analysis.
@@ -240,7 +221,7 @@ char *copyMajorTo(char *majorPos){
 	const char *filename = "/run/shm/proc_devices";
 
 	int rv = sysCommand("cat /proc/devices > /run/shm/proc_devices"); 	// "/proc/devices" can't be handled like
-	if (rv == -1){														// a normal file so we copy it to a file.
+	if (rv == -1){								// a normal file so we copy it to a file.
 		return NULL;
 	}
 
@@ -292,7 +273,7 @@ char *copyMajorTo(char *majorPos){
  * is expected to be available in the file:
  * "/lib/modules/'uname -r'/kernel/drivers/misc/pulse-generator.ko".
  */
-int driver_load(char *gpio1){  //char *gpio2
+int driver_load(char *gpio1){  
 	//printf("OK");
 	memset(g.strbuf, 0, 200 * sizeof(char));
 
@@ -302,11 +283,6 @@ int driver_load(char *gpio1){  //char *gpio2
 	strcat(insmod, gpio1);
 	//printf("OK");
 	
-
-	/*if (gpio2 != NULL){
-		strcat(insmod, " gpio_num2=");
-		strcat(insmod, gpio2);
-	}*/
 
 	int rv = sysCommand("rm -f /dev/pulse-generator");			// Clean up any old device files.
 	if (rv == -1){
@@ -400,19 +376,19 @@ void writePulseStatus(int readData[], int pulseTime){
  */
 int main(int argc, char *argv[]){
 
-	int pulseStart1 = 0; //, pulseStart2 = 0;
+	int pulseStart1 = 0; 
 	int writeData[1];
 	int readData[1];
-	//int writeData[2];
-	//int readData[2];
+	int writeData[2];
+	int readData[2];
 
 	struct timeval tv1;
 	struct timespec ts2;
-	int pulseEnd1 = 0; //, pulseEnd2 = 0;
+	int pulseEnd1 = 0;
 
 	memset(&g, 0, sizeof(struct pulseGeneratorGlobalVars));
 	g.pulseTime1 = -1;
-	//g.pulseTime2 = -1;
+	
 	g.badRead = false;
 	//printf("OK");
 	if (argc > 1){
@@ -465,10 +441,9 @@ int main(int argc, char *argv[]){
 		}
 		if (strcmp(argv[1], "-p") == 0 && argc == 4){
 			sscanf(argv[2], "%d", &g.pulseTime1);
-			//printf("OK");
-			//sscanf(argv[3], "%d", &g.pulseTime2);
+			
 
-			if (g.pulseTime1 >= 0 /*&& g.pulseTime2 > 0*/){
+			if (g.pulseTime1 >= 0 ){
 				goto start;
 			}
 		}
@@ -517,10 +492,6 @@ start:
 														// pulse write time thus allowing about 50 usec coming out of sleep
 														// plus 150 usecs of system response latency. A spin loop in the
 														// driver will chew up the excess time until the write at g.pulseTime1.
-	/*if (g.pulseTime2 > g.pulseTime1){
-		pulseStart2 = g.pulseTime2 - latency;			// Same for pulseStart2.
-	}*/
-
 	gettimeofday(&tv1, NULL);
 	//ts2 = setSyncDelay(pulseStart1, (tv1.tv_usec));		// Sleep to pulseStart1
 
@@ -547,38 +518,7 @@ start:
 		}
 
 		//writePulseStatus(readData, g.pulseTime1);
-		//generate_pulse(10,4);
-
-		/*if (g.pulseTime2 > g.pulseTime1){				// If there is a pulseTime2, generate a second pulse.
-
-			gettimeofday(&tv1, NULL);
-			ts2.tv_nsec = (pulseStart2 - tv1.tv_usec) * 1000;
-			ts2.tv_sec = 0;
-			nanosleep(&ts2, NULL);						// Sleep to pulseStart2.
-
-			writeData[0] = GPIO_B;						// Identify the second GPIO output.
-			writeData[1] = g.pulseTime2 - WRITE_DELAY;	// Set the pulse time.
-			rv = write(fd, writeData, 2 * sizeof(int));		// Request a write at pulseTime2.
-			if (rv == -1){
-				printf("Write to %s failed.\n", deviceName);
-				break;
-			}
-
-			if (read(fd, readData, 2 * sizeof(int)) < 0){	// Read the time the write actually occurred.
-				g.badRead = true;
-			}
-			else {
-				readData[1] += WRITE_DELAY;
-				'
-				pulseEnd2 = readData[1];
-				buildPulseDistrib(pulseEnd2, g.pulseTime2, g.p2Distrib, &g.p2Count);
-			}
-
-			writePulseStatus(readData, g.pulseTime2);
-
-			strftime(timeStr, 100, timefmt, localtime((const time_t*)(&(readData[0]))));
-			printf("%s %d %d\n", timeStr, pulseEnd1, pulseEnd2);
-		}*/
+		
 		strftime(timeStr, 100, timefmt, localtime((const time_t*)(&(readData[0]))));
 		printf("%s %d\n", timeStr, pulseEnd1);
 		//printf("%s %d\n", timeStr);
@@ -586,11 +526,7 @@ start:
 		g.badRead = false;
 
 		g.seq_num += 1;
-		//writeP1JitterDistribFile();
-		/*if (g.pulseTime2 > g.pulseTime1){
-			writeP2JitterDistribFile();
-		}*/
-
+		
 		gettimeofday(&tv1, NULL);
 		//ts2 = setSyncDelay(pulseStart1, tv1.tv_usec);	// Sleep to pulseStart1.
 		//printf("OK");
