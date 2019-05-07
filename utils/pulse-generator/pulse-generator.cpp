@@ -377,11 +377,9 @@ void writePulseStatus(int readData[], int pulseTime){
 int main(int argc, char *argv[]){
 
 	int pulseStart1 = 0; 
-	int writeData[1];
-	int readData[1];
 	int writeData[2];
 	int readData[2];
-
+	
 	struct timeval tv1;
 	struct timespec ts2;
 	int pulseEnd1 = 0;
