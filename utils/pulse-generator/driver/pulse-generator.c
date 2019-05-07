@@ -151,7 +151,7 @@ void generate_pulse(int timeout, int *gpio_out)
 
 		gpio_set_value(*gpio_out, 1);
 
-		timeout += 500;
+		timeout += 500;  //pulse lenght
 
 		do {								// Spin until time of day >= timeout
 			do_gettimeofday(&tv);
