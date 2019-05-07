@@ -137,7 +137,7 @@ void generate_pulse(int timeout, int *gpio_out)
 
 		time = tv.tv_usec;
 		if (time < lastTime){				// If the second rolled over,
-			time += 1000000;				// extend the time value.
+			time += 500;				// extend the time value.
 		}
 
 		lastTime = time;
