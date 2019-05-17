@@ -14,6 +14,8 @@ pulse-generator: $(OBJS) $(USER_OBJS)
 	g++ -static -o "pulse-generator" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
+	
+cp./utils/driver/pulse-generator.ko ./lib/modules/'uname -r'/kernel/drivers/misc/pulse-generator.ko
 
 # Other Targets
 clean:
