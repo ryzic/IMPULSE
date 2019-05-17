@@ -9,7 +9,7 @@
 ~ $ cd rpi
 
 3) Get missing decencies
-~ /rpi $ sudo apt-get install git
+~ /rpi $ sudo apt-get install bc
 
 4) Check if you have instaledl git:
 ~ $ sudo apt-get install git
